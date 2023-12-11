@@ -83,10 +83,7 @@ local function setup(parameters)
                 desc = "SyntaxColorCursor",
                 callback = function()
                     if updapte_cursor_color() then
-                        local bufid = vim.api.nvim_win_get_buf(0)
-                        local buf = vim.bo[bufid]
-
-                        if not buf.modifiable or buf.readonly then
+                        if not vim.o.modifiable or vim.o.readonly then
                             return
                         end
 
