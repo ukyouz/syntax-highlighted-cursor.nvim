@@ -61,8 +61,8 @@ local function updapte_cursor_color()
         guifg = cursorHi.guifg,
         guibg = cursorHi.guibg,
     }
-    if cursorHi.guifg == nil then colors.guibg = "NONE" else colors.guibg = cursorHi.guifg end
-    if cursorHi.guibg == nil then colors.guifg = "NONE" else colors.guifg = cursorHi.guibg end
+    if cursorHi.guifg == nil then colors.guifg = "NONE" else colors.guifg = cursorHi.guifg end
+    if cursorHi.guibg == nil then colors.guibg = "NONE" else colors.guibg = cursorHi.guibg end
     for k, v in string.gmatch(hi, "(%w+)=([#%w]+)") do
         colors[k] = v
     end
