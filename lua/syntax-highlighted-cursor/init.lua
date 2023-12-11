@@ -73,8 +73,14 @@ local function setup(parameters)
                 pattern = {"*"},
                 desc = "SyntaxColorCursor",
                 callback = function()
-                    print(123)
                     if updapte_cursor_color() then
+                        local bufid = vim.api.nvim_win_get_buf(0)
+                        local buf = vim.bo[bufid]
+
+                        if not buf.modifiable or buf.readonly then
+                            return
+                        end
+
                         local esc_keys = vim.api.nvim_replace_termcodes('<ESC>',true,false,true)
                         -- HACK: to update cursor color immediately
                         -- just go to insert mode than back to normal mode
