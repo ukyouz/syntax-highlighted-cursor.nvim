@@ -22,6 +22,13 @@ function augroup (group_name, autocmds)
     end
 end
 
+-- The function is called `t` for `termcodes`.
+-- You don't have to call it that, but I find the terseness convenient
+local function t(str)
+    -- Adjust boolean arguments as needed
+    return vim.api.nvim_replace_termcodes(str, true, true, true)
+end
+
 local last_color
 
 local function updapte_cursor_color()
@@ -48,18 +55,20 @@ local function updapte_cursor_color()
         return false
     end
 
-    t = {
+    last_color = hi
+
+    local colors = {
         guifg = cursorHi.guifg,
         guibg = cursorHi.guibg,
     }
-    if cursorHi.guifg == nil then t.guibg = "NONE" else t.guibg = cursorHi.guifg end
-    if cursorHi.guibg == nil then t.guifg = "NONE" else t.guifg = cursorHi.guibg end
+    if cursorHi.guifg == nil then colors.guibg = "NONE" else colors.guibg = cursorHi.guifg end
+    if cursorHi.guibg == nil then colors.guifg = "NONE" else colors.guifg = cursorHi.guibg end
     for k, v in string.gmatch(hi, "(%w+)=([#%w]+)") do
-        t[k] = v
+        colors[k] = v
     end
 
-    vim.api.nvim_set_hl(0, "Cursor", { fg=t.guibg, bg=t.guifg, })
-    vim.api.nvim_set_hl(0, "CursorIM", { fg=t.guibg, bg=t.guifg, })
+    vim.api.nvim_set_hl(0, "Cursor", { fg=colors.guibg, bg=colors.guifg, })
+    vim.api.nvim_set_hl(0, "CursorIM", { fg=colors.guibg, bg=colors.guifg, })
 
     return true
 end
@@ -81,11 +90,10 @@ local function setup(parameters)
                             return
                         end
 
-                        local esc_keys = vim.api.nvim_replace_termcodes('<ESC>',true,false,true)
                         -- HACK: to update cursor color immediately
                         -- just go to insert mode than back to normal mode
-                        vim.api.nvim_feedkeys('a', 'm', false)
-                        vim.api.nvim_feedkeys(esc_keys,'m', false)
+                        vim.api.nvim_feedkeys(t'a', 'm', false)
+                        vim.api.nvim_feedkeys(t'<ESC>','m', false)
                     end
                 end,
             },
