@@ -30,21 +30,26 @@ local function t(str)
 end
 
 local last_color
+local cursorDefaultHi = vim.api.nvim_command_output("hi Cursor")
 
 local function updapte_cursor_color()
     local hi_group = {}
     local posInfo = vim.inspect_pos()
-    if #posInfo.syntax > 0 then
-        -- lower priority
-        hi_group = posInfo.syntax[#posInfo.syntax]
-    end
     if #posInfo.treesitter > 0 then
         -- higher priority
         hi_group = posInfo.treesitter[#posInfo.treesitter]
+    elseif #posInfo.syntax > 0 then
+        -- lower priority
+        hi_group = posInfo.syntax[#posInfo.syntax]
     end
 
     if hi_group.hl_group_link == nil then
-        return false
+        -- restore default color
+        vim.api.nvim_set_hl(0, "Cursor", {
+            fg = cursorDefaultHi.guifg,
+            bg = cursorDefaultHi.guibg,
+        })
+        return true
     end
 
     local cursorHi = vim.api.nvim_command_output("hi Cursor")
@@ -57,10 +62,7 @@ local function updapte_cursor_color()
 
     last_color = hi
 
-    local colors = {
-        guifg = cursorHi.guifg,
-        guibg = cursorHi.guibg,
-    }
+    local colors = {}
     if cursorHi.guifg == nil then colors.guifg = "NONE" else colors.guifg = cursorHi.guifg end
     if cursorHi.guibg == nil then colors.guibg = "NONE" else colors.guibg = cursorHi.guibg end
     for k, v in string.gmatch(hi, "(%w+)=([#%w]+)") do
@@ -68,12 +70,20 @@ local function updapte_cursor_color()
     end
 
     vim.api.nvim_set_hl(0, "Cursor", { fg=colors.guibg, bg=colors.guifg, })
-    vim.api.nvim_set_hl(0, "CursorIM", { fg=colors.guibg, bg=colors.guifg, })
 
     return true
 end
 
 local function setup(parameters)
+    -- HACK: to update cursor color immediately
+    -- just go to command mode than back to normal mode.
+    -- but since we do not want cursor jumping around window
+    -- between current position and command line, so set a silent keymap.
+    -- I just map : to : to minimize the impact to user keymaps
+    vim.keymap.set('n', ':', ':', {
+        silent = true,
+        desc="<syntax-highlighted-cursor.nvim> Silent out : for updating color workaround."
+    })
 
     augroup("SyntaxColorCursor", {
         {
@@ -83,13 +93,7 @@ local function setup(parameters)
                 desc = "SyntaxColorCursor",
                 callback = function()
                     if updapte_cursor_color() then
-                        if not vim.o.modifiable or vim.o.readonly then
-                            return
-                        end
-
-                        -- HACK: to update cursor color immediately
-                        -- just go to insert mode than back to normal mode
-                        vim.api.nvim_feedkeys(t'a', 'm', false)
+                        vim.api.nvim_feedkeys(t':', 'm', false)
                         vim.api.nvim_feedkeys(t'<ESC>','m', false)
                     end
                 end,
