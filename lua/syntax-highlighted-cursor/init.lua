@@ -92,6 +92,10 @@ local function setup(parameters)
                 pattern = {"*"},
                 desc = "SyntaxColorCursor",
                 callback = function()
+                    if vim.bo.buftype == "nofile" then
+                        -- fix compatibility with plenary popup window, ie. Telescope
+                        return
+                    end
                     if updapte_cursor_color() then
                         vim.api.nvim_feedkeys(t':', 'm', false)
                         vim.api.nvim_feedkeys(t'<ESC>','m', false)
