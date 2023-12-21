@@ -97,6 +97,10 @@ local function setup(parameters)
                         return
                     end
                     if updapte_cursor_color() then
+                        if vim.fn.mode() ~= "n" then
+                            -- can only change mode in normal mode
+                            return
+                        end
                         vim.api.nvim_feedkeys(t':', 'm', false)
                         vim.api.nvim_feedkeys(t'<ESC>','m', false)
                     end
