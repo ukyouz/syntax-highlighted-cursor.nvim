@@ -38,6 +38,9 @@ local function updapte_cursor_color()
     if #posInfo.treesitter > 0 then
         -- higher priority
         hi_group = posInfo.treesitter[#posInfo.treesitter]
+    elseif #posInfo.semantic_tokens > 0 then
+        -- mid priority
+        hi_group = posInfo.syntax[#posInfo.semantic_tokens]
     elseif #posInfo.syntax > 0 then
         -- lower priority
         hi_group = posInfo.syntax[#posInfo.syntax]
