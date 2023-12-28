@@ -104,6 +104,10 @@ local function setup(parameters)
                             -- can only change mode in normal mode
                             return
                         end
+                        if vim.b[0].VM_Selection and next(vim.b[0].VM_Selection) then
+                            -- workaround for mg979/vim-visual-multi
+                            return
+                        end
                         vim.api.nvim_feedkeys(t':', 'm', false)
                         vim.api.nvim_feedkeys(t'<ESC>','m', false)
                     end
