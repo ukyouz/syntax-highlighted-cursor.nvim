@@ -37,13 +37,13 @@ local function updapte_cursor_color()
     local posInfo = vim.inspect_pos()
     if #posInfo.treesitter > 0 then
         -- higher priority
-        hi_group = posInfo.treesitter[#posInfo.treesitter]
+        hi_group = posInfo.treesitter[#posInfo.treesitter] or hi_group
     elseif #posInfo.semantic_tokens > 0 then
         -- mid priority
-        hi_group = posInfo.syntax[#posInfo.semantic_tokens]
+        hi_group = posInfo.syntax[#posInfo.semantic_tokens] or hi_group
     elseif #posInfo.syntax > 0 then
         -- lower priority
-        hi_group = posInfo.syntax[#posInfo.syntax]
+        hi_group = posInfo.syntax[#posInfo.syntax] or hi_group
     end
 
     if hi_group.hl_group_link == nil then
