@@ -35,12 +35,12 @@ local cursorDefaultHi = vim.api.nvim_command_output("hi Cursor")
 local function updapte_cursor_color()
     local hi_group = {}
     local posInfo = vim.inspect_pos()
-    if #posInfo.treesitter > 0 then
+    if #posInfo.semantic_tokens > 0 then
+        -- mid priority
+        hi_group = posInfo.semantic_tokens[1].opts or hi_group
+    elseif #posInfo.treesitter > 0 then
         -- higher priority
         hi_group = posInfo.treesitter[#posInfo.treesitter] or hi_group
-    elseif #posInfo.semantic_tokens > 0 then
-        -- mid priority
-        hi_group = posInfo.syntax[#posInfo.semantic_tokens] or hi_group
     elseif #posInfo.syntax > 0 then
         -- lower priority
         hi_group = posInfo.syntax[#posInfo.syntax] or hi_group
