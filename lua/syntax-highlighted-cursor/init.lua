@@ -96,7 +96,11 @@ local function setup(parameters)
                 desc = "SyntaxColorCursor",
                 callback = function()
                     if vim.bo.buftype == "nofile" then
-                        -- fix compatibility with plenary popup window, ie. Telescope
+                        -- fix compatibility with plenary popup window
+                        return
+                    end
+                    if vim.bo.buftype == "prompt" then
+                        -- fix compatibility with prompt window, ie. Telescope
                         return
                     end
                     if updapte_cursor_color() then
