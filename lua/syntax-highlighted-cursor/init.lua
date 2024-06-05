@@ -95,6 +95,11 @@ local function setup(parameters)
                 pattern = {"*"},
                 desc = "SyntaxColorCursor",
                 callback = function()
+                    if vim.bo.readonly then
+                        -- cursor color does not change in readonly buffer
+                        -- disable tempararily
+                        return
+                    end
                     if vim.bo.buftype == "nofile" then
                         -- fix compatibility with plenary popup window
                         return
