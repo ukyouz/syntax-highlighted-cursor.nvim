@@ -108,6 +108,11 @@ local function setup(parameters)
                         -- fix compatibility with prompt window, ie. Telescope
                         return
                     end
+                    local cfg = vim.api.nvim_win_get_config(0)
+                    if cfg.relative or cfg.external then
+                        -- fix compatibility with floating window
+                        return
+                    end
                     if updapte_cursor_color() then
                         if vim.fn.mode() ~= "n" then
                             -- can only change mode in normal mode
@@ -118,7 +123,7 @@ local function setup(parameters)
                             return
                         end
                         vim.api.nvim_feedkeys(t':', 'm', false)
-                        vim.api.nvim_feedkeys(t'<ESC>','m', false)
+                        vim.api.nvim_feedkeys(t'<ESC>','n', false)
                     end
                 end,
             },
