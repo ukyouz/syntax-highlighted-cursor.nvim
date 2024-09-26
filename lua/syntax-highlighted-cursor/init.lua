@@ -109,7 +109,7 @@ local function setup(parameters)
                         return
                     end
                     local cfg = vim.api.nvim_win_get_config(0)
-                    if cfg.relative or cfg.external then
+                    if cfg.relative ~= "" or cfg.external then
                         -- fix compatibility with floating window
                         return
                     end
