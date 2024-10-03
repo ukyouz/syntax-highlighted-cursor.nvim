@@ -88,9 +88,19 @@ local function setup(parameters)
         desc="<syntax-highlighted-cursor.nvim> Silent out : for updating color workaround."
     })
 
+    local options = {
+        debounce_ms = 50,
+    }
+
+    for k, v in pairs(parameters) do
+        options[k] = v
+    end
+
+    local debounce_ts = 0
+
     augroup("SyntaxColorCursor", {
         {
-            events = {"CursorMoved"},
+            events = {"CursorMoved", "CursorHold"},
             opts = {
                 pattern = {"*"},
                 desc = "SyntaxColorCursor",
@@ -113,6 +123,13 @@ local function setup(parameters)
                         -- fix compatibility with floating window
                         return
                     end
+                    if vim.uv.now() - debounce_ts < options["debounce_ms"] then
+                        -- debounce within 10 ms movement
+                        debounce_ts = vim.uv.now()
+                        return
+                    end
+                    debounce_ts = vim.uv.now()
+
                     if updapte_cursor_color() then
                         if vim.fn.mode() ~= "n" then
                             -- can only change mode in normal mode

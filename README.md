@@ -20,10 +20,24 @@ If you use [lazy.nvim](https://github.com/folke/lazy.nvim), add:
 {
     "ukyouz/syntax-highlighted-cursor.nvim",
     config = function()
-        require("syntax-highlighted-cursor").setup()
+        require("syntax-highlighted-cursor").setup({
+            -- Options
+        })
     end,
 },
 ```
+
+## Options
+
+
+```lua
+{
+    -- If you feel updating cursor color is too often for you, try make debounce_ms bigger.
+    debounce_ms = 50,
+}
+```
+
+Note that the last update delay is determined by `updatetime` option which triggers the `CursorHold` autocmd event.
 
 ## Limitations
 
