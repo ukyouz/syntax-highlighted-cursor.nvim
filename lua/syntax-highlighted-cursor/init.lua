@@ -92,8 +92,10 @@ local function setup(parameters)
         debounce_ms = 50,
     }
 
-    for k, v in pairs(parameters) do
-        options[k] = v
+    if parameters ~= nil then
+        for k, v in pairs(parameters) do
+            options[k] = v
+        end
     end
 
     local debounce_ts = 0
