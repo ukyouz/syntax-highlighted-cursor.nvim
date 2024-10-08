@@ -77,6 +77,36 @@ local function updapte_cursor_color()
     return true
 end
 
+local function valid_buffer()
+    if vim.bo.readonly then
+        -- cursor color does not change in readonly buffer
+        -- disable tempararily
+        return false
+    end
+    if vim.bo.buftype == "nofile" then
+        -- fix compatibility with plenary popup window
+        return false
+    end
+    if vim.bo.buftype == "prompt" then
+        -- fix compatibility with prompt window, ie. Telescope
+        return false
+    end
+    local cfg = vim.api.nvim_win_get_config(0)
+    if cfg.relative ~= "" or cfg.external then
+        -- fix compatibility with floating window
+        return false
+    end
+    if vim.fn.mode() ~= "n" then
+        -- can only change mode in normal mode
+        return false
+    end
+    if vim.b[0].VM_Selection and next(vim.b[0].VM_Selection) then
+        -- workaround for mg979/vim-visual-multi
+        return false
+    end
+    return true
+end
+
 local function setup(parameters)
     -- HACK: to update cursor color immediately
     -- just go to command mode than back to normal mode.
@@ -99,32 +129,19 @@ local function setup(parameters)
     end
 
     local debounce_ts = 0
+    local moved = false
 
     augroup("SyntaxColorCursor", {
         {
-            events = {"CursorMoved", "CursorHold"},
+            events = {"CursorMoved"},
             opts = {
                 pattern = {"*"},
                 desc = "SyntaxColorCursor",
                 callback = function()
-                    if vim.bo.readonly then
-                        -- cursor color does not change in readonly buffer
-                        -- disable tempararily
+                    if valid_buffer() == false then
                         return
                     end
-                    if vim.bo.buftype == "nofile" then
-                        -- fix compatibility with plenary popup window
-                        return
-                    end
-                    if vim.bo.buftype == "prompt" then
-                        -- fix compatibility with prompt window, ie. Telescope
-                        return
-                    end
-                    local cfg = vim.api.nvim_win_get_config(0)
-                    if cfg.relative ~= "" or cfg.external then
-                        -- fix compatibility with floating window
-                        return
-                    end
+                    moved = true
                     if vim.uv.now() - debounce_ts < options["debounce_ms"] then
                         -- debounce within 10 ms movement
                         debounce_ts = vim.uv.now()
@@ -133,14 +150,24 @@ local function setup(parameters)
                     debounce_ts = vim.uv.now()
 
                     if updapte_cursor_color() then
-                        if vim.fn.mode() ~= "n" then
-                            -- can only change mode in normal mode
-                            return
-                        end
-                        if vim.b[0].VM_Selection and next(vim.b[0].VM_Selection) then
-                            -- workaround for mg979/vim-visual-multi
-                            return
-                        end
+                        vim.api.nvim_feedkeys(t':', 'm', false)
+                        vim.api.nvim_feedkeys(t'<ESC>','n', false)
+                    end
+                end,
+            },
+        },
+        {
+            events = {"CursorHold"},
+            opts = {
+                pattern = {"*"},
+                desc = "SyntaxColorCursor",
+                callback = function()
+                    if moved == false then
+                        return
+                    end
+                    moved = false
+
+                    if updapte_cursor_color() then
                         vim.api.nvim_feedkeys(t':', 'm', false)
                         vim.api.nvim_feedkeys(t'<ESC>','n', false)
                     end
