@@ -36,6 +36,7 @@ local function update_cursor_color()
     local hi_group = {}
     local posInfo = vim.inspect_pos()
     local ns_id = 0
+    -- Priority: LSP -> Treesitter -> Regex-Based Syntax
     if #posInfo.semantic_tokens > 0 then
         -- take the highest priority (aka smallest number)
         local take = 1
@@ -49,7 +50,8 @@ local function update_cursor_color()
         hi_group = posInfo.semantic_tokens[take].opts or hi_group
         nsid = posInfo.semantic_tokens[take].ns_id
     elseif #posInfo.treesitter > 0 then
-        -- higher priority
+        -- take the last one that has the same filetype
+        -- if not found, just take the last one
         local take = 0
         for i, v in ipairs(posInfo.treesitter) do
             if v.lang == vim.bo.filetype then
@@ -61,7 +63,6 @@ local function update_cursor_color()
         end
         hi_group = posInfo.treesitter[take] or hi_group
     elseif #posInfo.syntax > 0 then
-        -- lower priority
         hi_group = posInfo.syntax[#posInfo.syntax] or hi_group
     end
 

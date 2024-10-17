@@ -31,6 +31,9 @@ If you use [lazy.nvim](https://github.com/folke/lazy.nvim), add:
     debounce_ms = 50,
 
     -- If your cursor color not change immediately, try set this to true
+    -- This setting adds a keymap for `:` to iteslf with quiet flag,
+    -- and let vim enter command mode for a moment
+    -- to force GUI refreshing cursor color.
     force_refresh_hack = false,
 
     -- Update Color on every cursor move
@@ -42,8 +45,6 @@ If you use [lazy.nvim](https://github.com/folke/lazy.nvim), add:
     when_cursor_hold = true,
 }
 ```
-
-Note that the last update delay is determined by `updatetime` option which triggers the `CursorHold` autocmd event.
 
 ## Limitations
 
