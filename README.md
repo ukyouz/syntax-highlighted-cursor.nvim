@@ -19,11 +19,6 @@ If you use [lazy.nvim](https://github.com/folke/lazy.nvim), add:
 ```lua
 {
     "ukyouz/syntax-highlighted-cursor.nvim",
-    config = function()
-        require("syntax-highlighted-cursor").setup({
-            -- Options
-        })
-    end,
 },
 ```
 
@@ -34,6 +29,17 @@ If you use [lazy.nvim](https://github.com/folke/lazy.nvim), add:
 {
     -- If you feel updating cursor color is too often for you, try make debounce_ms bigger.
     debounce_ms = 50,
+
+    -- If your cursor color not change immediately, try set this to true
+    force_refresh_hack = false,
+
+    -- Update Color on every cursor move
+    -- If you feel laggy, try set this to false
+    when_cursor_moved = true,
+
+    -- Update Color on every cursor hold (delay is updatetime)
+    -- If you feel laggy, try set this to false or increase updatetime
+    when_cursor_hold = true,
 }
 ```
 

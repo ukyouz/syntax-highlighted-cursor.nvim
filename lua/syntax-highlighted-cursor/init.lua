@@ -29,15 +29,17 @@ local function t(str)
     return vim.api.nvim_replace_termcodes(str, true, true, true)
 end
 
-local last_color
+local last_color = nil
 local cursorDefaultHi = vim.api.nvim_command_output("hi Cursor")
 
 local function updapte_cursor_color()
     local hi_group = {}
     local posInfo = vim.inspect_pos()
+    local ns_id = 0
     if #posInfo.semantic_tokens > 0 then
         -- mid priority
         hi_group = posInfo.semantic_tokens[1].opts or hi_group
+        nsid = posInfo.semantic_tokens[1].ns_id
     elseif #posInfo.treesitter > 0 then
         -- higher priority
         hi_group = posInfo.treesitter[#posInfo.treesitter] or hi_group
@@ -45,7 +47,12 @@ local function updapte_cursor_color()
         -- lower priority
         hi_group = posInfo.syntax[#posInfo.syntax] or hi_group
     end
-
+    
+    if hi_group.hl_group_link == last_color then
+        -- don't update color if same color found
+        return false
+    end
+    
     if hi_group.hl_group_link == nil then
         -- restore default color
         vim.api.nvim_set_hl(0, "Cursor", {
@@ -54,25 +61,22 @@ local function updapte_cursor_color()
         })
         return true
     end
-
-    local cursorHi = vim.api.nvim_command_output("hi Cursor")
-    local hi = vim.api.nvim_command_output("hi " .. hi_group.hl_group_link)
-
-    if hi == last_color then
-        -- don't update color if same color found
-        return false
-    end
-
-    last_color = hi
-
-    local colors = {}
-    if cursorHi.guifg == nil then colors.guifg = "NONE" else colors.guifg = cursorHi.guifg end
-    if cursorHi.guibg == nil then colors.guibg = "NONE" else colors.guibg = cursorHi.guibg end
+    last_color = hi_group.hl_group_link
+    
+    local hi = vim.api.nvim_command_output("hi " .. last_color)
+    colors = {}
     for k, v in string.gmatch(hi, "(%w+)=([#%w]+)") do
         colors[k] = v
     end
 
-    vim.api.nvim_set_hl(0, "Cursor", { fg=colors.guibg, bg=colors.guifg, })
+    if colors.guifg ~= nil and colors.guibg == nil then
+        if vim.o.background == "dark" then
+            colors.guibg = "#000000"
+        -- else
+        --     colors.guibg = "#FFFFFF"
+        end
+    end
+    vim.api.nvim_set_hl(ns_id, "Cursor", { fg=colors.guibg, bg=colors.guifg, })
 
     return true
 end
@@ -108,24 +112,29 @@ local function valid_buffer()
 end
 
 local function setup(parameters)
+    local options = {
+        debounce_ms = 50,
+        force_refresh_hack = false,
+        when_cursor_moved = true,
+        when_cursor_hold = true,
+    }
+    
+    if parameters ~= nil then
+        for k, v in pairs(parameters) do
+            options[k] = v
+        end
+    end
+
     -- HACK: to update cursor color immediately
     -- just go to command mode than back to normal mode.
     -- but since we do not want cursor jumping around window
     -- between current position and command line, so set a silent keymap.
     -- I just map : to : to minimize the impact to user keymaps
-    vim.keymap.set('n', ':', ':', {
-        silent = true,
-        desc="<syntax-highlighted-cursor.nvim> Silent out : for updating color workaround."
-    })
-
-    local options = {
-        debounce_ms = 50,
-    }
-
-    if parameters ~= nil then
-        for k, v in pairs(parameters) do
-            options[k] = v
-        end
+    if options.force_refresh_hack then
+        vim.keymap.set('n', ':', ':', {
+            silent = true,
+            desc="<syntax-highlighted-cursor.nvim> Silent out : for updating color workaround."
+        })
     end
 
     local debounce_ts = 0
@@ -142,6 +151,9 @@ local function setup(parameters)
                         return
                     end
                     moved = true
+                    if options.when_cursor_moved == false then
+                        return
+                    end
                     if vim.uv.now() - debounce_ts < options["debounce_ms"] then
                         -- debounce within 10 ms movement
                         debounce_ts = vim.uv.now()
@@ -150,8 +162,10 @@ local function setup(parameters)
                     debounce_ts = vim.uv.now()
 
                     if updapte_cursor_color() then
-                        vim.api.nvim_feedkeys(t':', 'm', false)
-                        vim.api.nvim_feedkeys(t'<ESC>','n', false)
+                        if options.force_refresh_hack then
+                            vim.api.nvim_feedkeys(t':', 'm', false)
+                            vim.api.nvim_feedkeys(t'<ESC>','n', false)
+                        end
                     end
                 end,
             },
@@ -162,14 +176,21 @@ local function setup(parameters)
                 pattern = {"*"},
                 desc = "SyntaxColorCursor",
                 callback = function()
+                    if options.when_cursor_hold == false then
+                        return
+                    end
                     if moved == false then
                         return
                     end
                     moved = false
-
+                    if valid_buffer() == false then
+                        return
+                    end
                     if updapte_cursor_color() then
-                        vim.api.nvim_feedkeys(t':', 'm', false)
-                        vim.api.nvim_feedkeys(t'<ESC>','n', false)
+                        if options.force_refresh_hack then
+                            vim.api.nvim_feedkeys(t':', 'm', false)
+                            vim.api.nvim_feedkeys(t'<ESC>','n', false)
+                        end
                     end
                 end,
             },
