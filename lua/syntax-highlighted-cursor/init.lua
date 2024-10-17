@@ -37,9 +37,17 @@ local function updapte_cursor_color()
     local posInfo = vim.inspect_pos()
     local ns_id = 0
     if #posInfo.semantic_tokens > 0 then
-        -- mid priority
-        hi_group = posInfo.semantic_tokens[1].opts or hi_group
-        nsid = posInfo.semantic_tokens[1].ns_id
+        -- take the highest priority (aka smallest number)
+        local take = 1
+        local priority_order = 100000
+        for i, v in ipairs(posInfo.semantic_tokens) do
+            if priority_order > v.opts.priority then
+                take = i
+                priority_order = v.opts.priority
+            end
+        end
+        hi_group = posInfo.semantic_tokens[take].opts or hi_group
+        nsid = posInfo.semantic_tokens[take].ns_id
     elseif #posInfo.treesitter > 0 then
         -- higher priority
         hi_group = posInfo.treesitter[#posInfo.treesitter] or hi_group
@@ -47,12 +55,12 @@ local function updapte_cursor_color()
         -- lower priority
         hi_group = posInfo.syntax[#posInfo.syntax] or hi_group
     end
-    
+
     if hi_group.hl_group_link == last_color then
         -- don't update color if same color found
         return false
     end
-    
+
     if hi_group.hl_group_link == nil then
         -- restore default color
         vim.api.nvim_set_hl(0, "Cursor", {
@@ -62,7 +70,7 @@ local function updapte_cursor_color()
         return true
     end
     last_color = hi_group.hl_group_link
-    
+
     local hi = vim.api.nvim_command_output("hi " .. last_color)
     colors = {}
     for k, v in string.gmatch(hi, "(%w+)=([#%w]+)") do
@@ -118,7 +126,7 @@ local function setup(parameters)
         when_cursor_moved = true,
         when_cursor_hold = true,
     }
-    
+
     if parameters ~= nil then
         for k, v in pairs(parameters) do
             options[k] = v
