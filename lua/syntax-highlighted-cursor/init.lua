@@ -32,7 +32,7 @@ end
 local last_color = nil
 local cursorDefaultHi = vim.api.nvim_command_output("hi Cursor")
 
-local function updapte_cursor_color()
+local function update_cursor_color()
     local hi_group = {}
     local posInfo = vim.inspect_pos()
     local ns_id = 0
@@ -178,7 +178,7 @@ local function setup(parameters)
                     end
                     set_timeout(
                         function()
-                            if updapte_cursor_color() then
+                            if update_cursor_color() then
                                 if options.force_refresh_hack then
                                     vim.api.nvim_feedkeys(t':', 'm', false)
                                     vim.api.nvim_feedkeys(t'<ESC>','n', false)
@@ -202,7 +202,7 @@ local function setup(parameters)
                     if valid_buffer() == false then
                         return
                     end
-                    if updapte_cursor_color() then
+                    if update_cursor_color() then
                         if options.force_refresh_hack then
                             vim.api.nvim_feedkeys(t':', 'm', false)
                             vim.api.nvim_feedkeys(t'<ESC>','n', false)
