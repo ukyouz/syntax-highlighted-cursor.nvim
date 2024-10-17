@@ -50,7 +50,16 @@ local function updapte_cursor_color()
         nsid = posInfo.semantic_tokens[take].ns_id
     elseif #posInfo.treesitter > 0 then
         -- higher priority
-        hi_group = posInfo.treesitter[#posInfo.treesitter] or hi_group
+        local take = 0
+        for i, v in ipairs(posInfo.treesitter) do
+            if v.lang == vim.bo.filetype then
+                take = i
+            end
+        end
+        if take == 0 then
+            take = #posInfo.treesitter
+        end
+        hi_group = posInfo.treesitter[take] or hi_group
     elseif #posInfo.syntax > 0 then
         -- lower priority
         hi_group = posInfo.syntax[#posInfo.syntax] or hi_group
