@@ -128,6 +128,15 @@ local function valid_buffer()
     return true
 end
 
+local M = {}
+local function set_timeout(callback, ms)
+    if M.timer ~= nil then
+        M.timer:close()
+    end
+    M.timer = vim.loop.new_timer()
+    M.timer:start(ms, 0, vim.schedule_wrap(callback))
+end
+
 local function setup(parameters)
     local options = {
         debounce_ms = 50,
@@ -154,9 +163,6 @@ local function setup(parameters)
         })
     end
 
-    local debounce_ts = 0
-    local moved = false
-
     augroup("SyntaxColorCursor", {
         {
             events = {"CursorMoved"},
@@ -164,26 +170,23 @@ local function setup(parameters)
                 pattern = {"*"},
                 desc = "SyntaxColorCursor",
                 callback = function()
-                    if valid_buffer() == false then
-                        return
-                    end
-                    moved = true
                     if options.when_cursor_moved == false then
                         return
                     end
-                    if vim.uv.now() - debounce_ts < options["debounce_ms"] then
-                        -- debounce within 10 ms movement
-                        debounce_ts = vim.uv.now()
+                    if valid_buffer() == false then
                         return
                     end
-                    debounce_ts = vim.uv.now()
-
-                    if updapte_cursor_color() then
-                        if options.force_refresh_hack then
-                            vim.api.nvim_feedkeys(t':', 'm', false)
-                            vim.api.nvim_feedkeys(t'<ESC>','n', false)
-                        end
-                    end
+                    set_timeout(
+                        function()
+                            if updapte_cursor_color() then
+                                if options.force_refresh_hack then
+                                    vim.api.nvim_feedkeys(t':', 'm', false)
+                                    vim.api.nvim_feedkeys(t'<ESC>','n', false)
+                                end
+                            end
+                        end,
+                        options.debounce_ms
+                    )
                 end,
             },
         },
@@ -196,10 +199,6 @@ local function setup(parameters)
                     if options.when_cursor_hold == false then
                         return
                     end
-                    if moved == false then
-                        return
-                    end
-                    moved = false
                     if valid_buffer() == false then
                         return
                     end
