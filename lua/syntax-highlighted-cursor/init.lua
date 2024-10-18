@@ -180,6 +180,9 @@ local function setup(parameters)
                     set_timeout(
                         function()
                             if update_cursor_color() then
+                                if valid_buffer() == false then
+                                    return
+                                end
                                 if options.force_refresh_hack then
                                     vim.api.nvim_feedkeys(t':', 'm', false)
                                     vim.api.nvim_feedkeys(t'<ESC>','n', false)
@@ -204,6 +207,9 @@ local function setup(parameters)
                         return
                     end
                     if update_cursor_color() then
+                        if valid_buffer() == false then
+                            return
+                        end
                         if options.force_refresh_hack then
                             vim.api.nvim_feedkeys(t':', 'm', false)
                             vim.api.nvim_feedkeys(t'<ESC>','n', false)
