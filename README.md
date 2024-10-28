@@ -41,8 +41,7 @@ If you use [lazy.nvim](https://github.com/folke/lazy.nvim), add:
     when_cursor_moved = true,
 
     -- Update Color on every cursor hold (delay is updatetime)
-    -- If you feel laggy, try set this to false or increase updatetime
-    when_cursor_hold = true,
+    when_cursor_hold = false,
 }
 ```
 

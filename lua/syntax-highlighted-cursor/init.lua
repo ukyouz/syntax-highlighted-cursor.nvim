@@ -143,7 +143,7 @@ local function setup(parameters)
         debounce_ms = 50,
         force_refresh_hack = false,
         when_cursor_moved = true,
-        when_cursor_hold = true,
+        when_cursor_hold = false,
     }
 
     if parameters ~= nil then
