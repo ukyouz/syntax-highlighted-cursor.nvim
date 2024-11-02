@@ -184,8 +184,7 @@ local function setup(parameters)
                                     return
                                 end
                                 if options.force_refresh_hack then
-                                    vim.api.nvim_feedkeys(t':', 'm', false)
-                                    vim.api.nvim_feedkeys(t'<ESC>','n', false)
+                                    vim.cmd("normal! :<esc>")
                                 end
                             end
                         end,
@@ -211,8 +210,7 @@ local function setup(parameters)
                             return
                         end
                         if options.force_refresh_hack then
-                            vim.api.nvim_feedkeys(t':', 'm', false)
-                            vim.api.nvim_feedkeys(t'<ESC>','n', false)
+                            vim.cmd("normal! :<esc>")
                         end
                     end
                 end,
