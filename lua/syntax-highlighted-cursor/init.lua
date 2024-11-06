@@ -71,7 +71,8 @@ local function update_cursor_color()
         return false
     end
 
-    if hi_group.hl_group_link == nil then
+    last_color = hi_group.hl_group_link
+    if last_color == nil then
         -- restore default color
         vim.api.nvim_set_hl(0, "Cursor", {
             fg = cursorDefaultHi.guifg,
@@ -79,7 +80,6 @@ local function update_cursor_color()
         })
         return true
     end
-    last_color = hi_group.hl_group_link
 
     local hi = vim.api.nvim_command_output("hi " .. last_color)
     colors = {}
