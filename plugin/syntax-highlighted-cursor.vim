@@ -5,7 +5,7 @@
 
 
 " highlight Cursor guifg=white guibg=blue
-set guicursor=n-v-c:block-Cursor-blinkon0
+set guicursor+=n-v-c:block-Cursor-blinkon0
 set guicursor+=i:ver30-Cursor
 
 
